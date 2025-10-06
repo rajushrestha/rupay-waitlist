@@ -43,7 +43,7 @@ function App() {
 					<WaitlistForm />
 				</section>
 				<p className="text-xs text-muted-foreground">
-					No spam. We’ll only email you when we open access.
+					You will be notified when access becomes available.
 				</p>
 			</div>
 
