@@ -47,7 +47,7 @@ function App() {
 				</p>
 			</div>
 
-			<div className="absolute inset-0 flex items-center justify-center">
+			<div className="absolute inset-0 flex items-end justify-end">
 				<Globe />
 			</div>
 		</main>

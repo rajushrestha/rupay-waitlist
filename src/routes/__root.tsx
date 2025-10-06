@@ -1,7 +1,7 @@
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-
+import { AnalyticsTracker } from "@/components/analytics-tracker";
 import appCss from "@/styles.css?url";
 
 export const Route = createRootRoute({
@@ -15,13 +15,22 @@ export const Route = createRootRoute({
 				content: "width=device-width, initial-scale=1",
 			},
 			{
-				title: "TanStack Start Starter",
+				title: "Payments & Billing Platform for SaaS, AI and Digital Products",
+			},
+			{
+				description:
+					"Accept payments instantly and setup billing flexibly with usage-based, subscription, and one-time models, all without building your own infrastructure.",
 			},
 		],
 		links: [
 			{
 				rel: "stylesheet",
 				href: appCss,
+			},
+		],
+		scripts: [
+			{
+				src: `https://www.googletagmanager.com/gtag/js?id=${process.env.GOOGLE_TAG_MANAGER_ID}`,
 			},
 		],
 	}),
@@ -49,6 +58,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 					]}
 				/>
 				<Scripts />
+				<AnalyticsTracker />
 			</body>
 		</html>
 	);

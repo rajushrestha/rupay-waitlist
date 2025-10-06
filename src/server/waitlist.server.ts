@@ -50,20 +50,24 @@ export const joinWaitlist = createServerFn({ method: "POST" })
 			request && "headers" in request
 				? (request as Request).headers
 				: new Headers();
-		const userAgentRaw = headers.get("user-agent") || "";
+		const userAgentRaw =
+			headers.get("User-Agent") || headers.get("user-agent") || "";
 		const userAgent = userAgentRaw ? userAgentRaw.slice(0, 512) : null;
 		// Per Cloudflare docs, prefer CF-Connecting-IP and CF-IPCountry
 		// https://developers.cloudflare.com/fundamentals/reference/http-headers/
-		const cfConnectingIp = headers.get("cf-connecting-ip");
-		const xForwardedFor = headers.get("x-forwarded-for");
-		const xRealIp = headers.get("x-real-ip");
+		const cfConnectingIp =
+			headers.get("CF-Connecting-IP") || headers.get("cf-connecting-ip");
+		const xForwardedFor =
+			headers.get("X-Forwarded-For") || headers.get("x-forwarded-for");
+		const xRealIp = headers.get("X-Real-Ip") || headers.get("x-real-ip");
 		const ipCandidate =
 			cfConnectingIp ||
 			(xForwardedFor ? xForwardedFor.split(",")[0] : undefined) ||
 			xRealIp ||
 			undefined;
 		const ip = ipCandidate ? ipCandidate.trim() : null;
-		const cfCountry = headers.get("cf-ipcountry") || undefined;
+		const cfCountry =
+			headers.get("CF-IPCountry") || headers.get("cf-ipcountry") || undefined;
 		const reqCountry = (request as unknown as { cf?: { country?: string } })?.cf
 			?.country;
 		const country = (cfCountry || reqCountry || undefined) ?? null;
