@@ -4,9 +4,13 @@ dist
 dist-ssr
 *.local
 count.txt
-.env
+.env*
+!.env.example
+.wrangler
+.vscode
 .nitro
 .tanstack
 .output
 .vinxi
 todos.json
+.dev.vars*
