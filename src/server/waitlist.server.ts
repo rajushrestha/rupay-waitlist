@@ -50,20 +50,28 @@ export const joinWaitlist = createServerFn({ method: "POST" })
 			request && "headers" in request
 				? (request as Request).headers
 				: new Headers();
-		const userAgent = (headers.get("user-agent") || "").slice(0, 512);
-		const ipHeader =
-			headers.get("cf-connecting-ip") ||
-			headers.get("x-forwarded-for") ||
-			headers.get("x-real-ip") ||
-			"";
-		const ip = ipHeader.split(",")[0].trim();
-		const country =
-			headers.get("cf-ipcountry") || headers.get("x-country-code") || null;
+		const userAgentRaw = headers.get("user-agent") || "";
+		const userAgent = userAgentRaw ? userAgentRaw.slice(0, 512) : null;
+		// Per Cloudflare docs, prefer CF-Connecting-IP and CF-IPCountry
+		// https://developers.cloudflare.com/fundamentals/reference/http-headers/
+		const cfConnectingIp = headers.get("cf-connecting-ip");
+		const xForwardedFor = headers.get("x-forwarded-for");
+		const xRealIp = headers.get("x-real-ip");
+		const ipCandidate =
+			cfConnectingIp ||
+			(xForwardedFor ? xForwardedFor.split(",")[0] : undefined) ||
+			xRealIp ||
+			undefined;
+		const ip = ipCandidate ? ipCandidate.trim() : null;
+		const cfCountry = headers.get("cf-ipcountry") || undefined;
+		const reqCountry = (request as unknown as { cf?: { country?: string } })?.cf
+			?.country;
+		const country = (cfCountry || reqCountry || undefined) ?? null;
 
 		// Insert with additional metadata (ignore duplicates by email)
 		await d1Query(
 			"INSERT OR IGNORE INTO waitlist (email, ip, user_agent, country) VALUES (?, ?, ?, ?);",
-			[email, ip || null, userAgent || null, country],
+			[email, ip ?? null, userAgent ?? null, country ?? null],
 		);
 
 		const countRes = await d1Query("SELECT COUNT(*) AS c FROM waitlist;");
