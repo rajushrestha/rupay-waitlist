@@ -72,6 +72,33 @@ export const joinWaitlist = createServerFn({ method: "POST" })
 			?.country;
 		const country = (cfCountry || reqCountry || undefined) ?? null;
 
+		// Optional debug surface for live troubleshooting (enable with DEBUG_HEADERS=1)
+		const includeDebug = process.env.DEBUG_HEADERS === "1";
+		const debugPayload = includeDebug
+			? {
+					resolved: { ip, country, userAgent },
+					headersPresent: {
+						CFConnectingIP: Boolean(
+							headers.get("CF-Connecting-IP") ||
+								headers.get("cf-connecting-ip"),
+						),
+						CFIPCountry: Boolean(
+							headers.get("CF-IPCountry") || headers.get("cf-ipcountry"),
+						),
+						XForwardedFor: Boolean(
+							headers.get("X-Forwarded-For") || headers.get("x-forwarded-for"),
+						),
+						XRealIp: Boolean(
+							headers.get("X-Real-Ip") || headers.get("x-real-ip"),
+						),
+						UserAgent: Boolean(userAgent),
+					},
+					cf:
+						(request as unknown as { cf?: Record<string, unknown> })?.cf ??
+						null,
+				}
+			: undefined;
+
 		// Insert with additional metadata (ignore duplicates by email)
 		await d1Query(
 			"INSERT OR IGNORE INTO waitlist (email, ip, user_agent, country) VALUES (?, ?, ?, ?);",
@@ -80,5 +107,7 @@ export const joinWaitlist = createServerFn({ method: "POST" })
 
 		const countRes = await d1Query("SELECT COUNT(*) AS c FROM waitlist;");
 		const count = Number(countRes.result?.[0]?.results?.[0]?.c ?? 0);
-		return { ok: true as const, count };
+		return includeDebug
+			? ({ ok: true as const, count, debug: debugPayload } as const)
+			: ({ ok: true as const, count } as const);
 	});
